@@ -17,55 +17,46 @@ namespace ft
 	
 	//is_integral----------------------------------------------//
 	template <typename>
-	struct is_integral : std::false_type {};
+	struct is_integral : std::__false_type {};
 	
 	template <>
-	struct is_integral<bool> : std::true_type {};
+	struct is_integral<bool> : std::__true_type {};
 
 	template <>
-	struct is_integral<char> : std::true_type {};
+	struct is_integral<char> : std::__true_type {};
 
 	template <>
-	struct is_integral<char16_t> : std::true_type {};
+	struct is_integral<wchar_t> : std::__true_type {};
 
 	template <>
-	struct is_integral<char32_t> : std::true_type {};
+	struct is_integral<signed char> : std::__true_type {};
 
 	template <>
-	struct is_integral<wchar_t> : std::true_type {};
+	struct is_integral<short int> : std::__true_type {};
 
 	template <>
-	struct is_integral<signed char> : std::true_type {};
+	struct is_integral<int> : std::__true_type {};
 
 	template <>
-	struct is_integral<short int> : std::true_type {};
+	struct is_integral<long int> : std::__true_type {};
 
 	template <>
-	struct is_integral<int> : std::true_type {};
+	struct is_integral<long long int> : std::__true_type {};
 
 	template <>
-	struct is_integral<int> : std::true_type {};
+	struct is_integral<unsigned char> : std::__true_type {};
 
 	template <>
-	struct is_integral<long int> : std::true_type {};
+	struct is_integral<unsigned short int> : std::__true_type {};
 
 	template <>
-	struct is_integral<long long int> : std::true_type {};
+	struct is_integral<unsigned int> : std::__true_type {};
 
 	template <>
-	struct is_integral<unsigned char> : std::true_type {};
+	struct is_integral<unsigned long int> : std::__true_type {};
 
 	template <>
-	struct is_integral<unsigned short int> : std::true_type {};
-
-	template <>
-	struct is_integral<unsigned int> : std::true_type {};
-
-	template <>
-	struct is_integral<unsigned long int> : std::true_type {};
-
-	template <>
-	struct is_integral<unsigned long long int> : std::true_type {};
+	struct is_integral<unsigned long long int> : std::__true_type {};
 	//-------------------------------------------------------------//
 
 	//pair class--------------------------------------------------//
@@ -97,38 +88,16 @@ namespace ft
 			second = pr.second;
 			return (*this);
 		}
-
 		~pair() {};
-
-		bool	operator!=(const pair<T1,T2> &lhs, const pair<T1,T2> &rhs)
-		{ return !(lhs == rhs); }
-
-		bool	operator==(const pair<T1,T2> &lhs, const pair<T1,T2> &rhs)
-		{ return lhs.first ==rhs.first && lhs.second ==rhs.second; }
-		
-		bool	operator<=(const pair<T1,T2> &lhs, const pair<T1,T2> &rhs)
-		{ return !(rhs < lhs); }
-		
-		bool	operator>=(const pair<T1,T2> &lhs, const pair<T1,T2> &rhs)
-		{ return !(lhs < rhs); }
-		
-		bool	operator<(const pair<T1,T2> &lhs, const pair<T1,T2> &rhs)
-		{ return lhs.first < rhs,first || (!(rhs.first < lhs.first) && lhs.second < rhs.second); }
-		
-		bool	operator>(const pair<T1,T2> &lhs, const pair<T1,T2> &rhs)
-		{ return rhs < lhs; }
+	};
 
 		//----------------------------------------------------------------------------------//
-
 		template <class T1, class T2>
 		pair<T1,T2> make_pair(T1 x, T2 y)
 		{
 			return (pair<T1,T2>(x,y));
 		}
-
 		//---------------------------------------------------------------------------------//
 
-	};
-	
 }
 #endif

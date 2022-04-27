@@ -19,7 +19,7 @@ namespace ft
 		iterator(T*	first = 0)
 		{ current = first; }
 		iterator(const iterator<T> &copy)
-		{ this = copy; }
+		{ *this = copy; }
 		iterator&	operator=(const iterator &object)
 		{
 			if (this == &object)
@@ -35,12 +35,12 @@ namespace ft
 		//overloads
 		iterator	operator+(int n)
 		{
-			reverse += n;
+			current += n;
 			return (*this);
 		}
 		iterator	operator-(int n)
 		{
-			reverse -= n;
+			current -= n;
 			return (*this);
 		}
 		iterator&	operator+=(int nb)
@@ -50,7 +50,7 @@ namespace ft
 			if (nb < 0)
 				nb *= -1;
 			for (; nb > 0; --nb)
-				reverse += move;
+				current += move;
 			return (*this);
 		}
 		iterator&	operator-=(int nb)
@@ -60,7 +60,7 @@ namespace ft
 			if (nb < 0)
 				nb *= -1;
 			for (; nb > 0; --nb)
-				reverse += move;
+				current += move;
 			return (*this);
 		}
 

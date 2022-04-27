@@ -2,6 +2,8 @@
 #define VECTOR_HPP
 
 #include <iostream>
+#include <iomanip>
+#include <exception>
 #include <stdexcept>
 #include <cmath>
 #include <memory>
@@ -13,7 +15,7 @@
 
 namespace ft
 {
-	template <typename T, class Alloc = std::allocator<T>>
+	template <typename T, class Alloc = std::allocator<T> >
 	class vector
 	{
 		public:
@@ -44,9 +46,16 @@ namespace ft
 
 		void	destroy_tmp(vector &tmp)
 		{
-			for (iterator it = tmp.begin(); it != tmp.end(); ++it)
-				tmp._alloc.destroy(&(*it));
-			tmp._alloc.deallocate(tmp._array, tmp._capacity);
+			switch (_size)
+			{
+			case 0:
+				break;
+			default:
+				for (iterator it = tmp.begin(); it != tmp.end(); ++it)
+					tmp._alloc.destroy(&(*it));
+				tmp._alloc.deallocate(tmp._array, tmp._capacity);
+				break;
+			}
 		}
 
 		public:
@@ -91,14 +100,8 @@ namespace ft
 
 		vector& operator= (const vector& object)
 		{
-			if (this = &object)
+			if (this == &object)
 				return (*this);
-			if (_array) //maybe not needed
-			{
-				for (size_t i = 0; i < _size; i++)
-					_alloc.destroy(&_array[i]);
-				_alloc.deallocate(_array, _capacity);
-			}
 			iterator	it = object.begin();
 			_alloc = object._alloc;
 			_size = object._size;
@@ -106,15 +109,16 @@ namespace ft
 			_array = _alloc.allocate(_capacity);
 			for (size_t i = 0; it != object.end(); i++, it++)
 				_alloc.construct(&_array[i], *it);
+			return (*this);
 		}
 
 		/* ------------------------- ITERATORS ------------------------- */
 	
 		//end iterators point to smth after the last element in array
 		//accessing them will cause undefined behaviour (same for rend for reverse_it)
-		iterator		begin()
+		iterator	begin()
 		{ return iterator(_array); }
-		iterator		end()
+		iterator	end()
 		{ return iterator(_array + _size); }
 	
 		const_iterator  begin() const
@@ -140,6 +144,8 @@ namespace ft
 		{ return (_alloc.max_size()); }
 		size_type	capacity() const
 		{ return _capacity; }
+		allocator_type	get_allocator() const
+		{ return (_alloc); }
 		
 		void resize(size_type n, value_type val = value_type())
 		{
@@ -185,14 +191,21 @@ namespace ft
 			{
 				try
 				{
-					vector	tmp(this);
-					for (size_type i = 0; i < _size; i++)
-						_alloc.destroy(&_array[i]);
-					_alloc.deallocate(_array, _capacity);
-					_array = _alloc.allocate(_array, n);
+					vector	tmp(*this);
+					switch (_size)
+					{
+					case 0:
+						break;
+					default:	
+						for (size_type i = 0; i < _size; i++)
+							_alloc.destroy(&_array[i]);
+						_alloc.deallocate(_array, _capacity);
+						break;
+					}
+					_array = _alloc.allocate(n);
 					for (size_type i = 0; i < _size; i++)
 						_alloc.construct(&_array[i], tmp[i]);
-					destroy_tmp(tmp);
+					//destroy_tmp(tmp);
 					_capacity = n;
 				}
 				catch(const std::exception& e)
@@ -276,8 +289,8 @@ namespace ft
 		{
 			if (_size + 1 > _capacity)
 				reserve(_size + 1);
-			_size += 1;
 			_alloc.construct(&_array[_size], val);
+			_size += 1;
 		}
 
 		//removes the last element in the vector, reducing the container size by one.
@@ -379,7 +392,7 @@ namespace ft
 
 		void	swap(vector &x)
 		{
-			vector	tmp(this);
+			vector	tmp(*this);
 			_alloc = x._alloc;
 			_size = x._size;
 			_capacity = x._capacity;
@@ -466,8 +479,15 @@ namespace ft
 					_alloc.construct(&(*(first)), *last);
 			}
 		}
-			
 	};
+
+	template <typename T>
+	std::ostream& operator<<(std::ostream &out, const vector<T> &obj)
+	{
+		std::cout << "vector size = " << obj.size() << " capacity = " << obj.capacity() << "\n";
+		std::cout << "first element is = " << obj.front() << ", last element is = " << obj.back() << "\n";
+		return (out);
+	}
 }
 
 #endif

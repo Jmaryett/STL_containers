@@ -24,7 +24,7 @@ namespace ft
 			return (*this);
 		}
 		//initialize constructor to create a reverse_iterator from original one
-		explicit reverse_iterator(const iterator<T> &copy)
+		explicit reverse_iterator(const T &copy)
 		{ reverse = copy.getValue() - 1; }
 		
 		~reverse_iterator(){};
@@ -34,9 +34,9 @@ namespace ft
 		{ return (reverse); }
 
 		//returns base iterator pointing next elem after reverse points to
-		iterator	base() const
+		T	base() const
 		{
-			iterator it(reverse + 1);
+			T it(reverse + 1);
 			return (it);
 		}
 
@@ -105,21 +105,19 @@ namespace ft
 			tmp += nb;
 			return (*tmp);
 		}
+	
+		friend reverse_iterator operator+(int nb, const reverse_iterator &rev_it)
+		{
+			reverse_iterator	ret(rev_it);
+			return (ret += nb);
+		}
+
+		friend reverse_iterator operator-(int nb, const reverse_iterator &rev_it)
+		{
+			reverse_iterator	ret(rev_it);
+			return (ret -= nb);
+		}		
 	};
-
-	template <typename T>
-	reverse_iterator<T> operator+(int nb, const reverse_iterator<T>& rev_it)
-	{
-		reverse_iterator	ret(rev_it);
-		return (ret += nb);
-	}
-
-	template <typename T>
-	reverse_iterator<T> operator-(int nb, const reverse_iterator<T>& rev_it)
-	{
-		reverse_iterator	ret(rev_it);
-		return (ret -= nb);
-	}		
 }
 
 #endif
