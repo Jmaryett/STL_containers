@@ -1,30 +1,26 @@
 #include "vector/vector.hpp"
+#include <iostream>
+#include <iomanip>
+#include <vector>
 
-int	main()
+void	print(std::vector<int> t, ft::vector<int> m)
 {
-	ft::vector<int> myVector;
-	try
-	{
-		for (int i = 0; i < 10; i++)
-		{	
-			myVector.push_back(i);
-			std::cout << i << " element is = " << myVector[i] << "\n";
-		}
-		for (int i = 0; i < 10; i++)
-			std::cout << "index " << i << "= " << myVector[i] << "\n";
-		std::cout << myVector;
-		myVector.reserve(2);
-		std::cout << "after reserve < capacity: " << myVector;
-		myVector.reserve(12);
-		std::cout << "after reserve > capacity: " << myVector;
-		myVector.resize(3, 11);
-		std::cout << "after resize in less: " << myVector;
-		myVector.resize(300, 11);
-		std::cout << "after resize in bigger: " << myVector;
-		std::cout << "index[4] = " << myVector[4] << "\n";
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-	}
+	std::vector<int>::iterator it = t.begin();
+	for (size_t i = 0; it != t.end(); i++, it++)
+		std::cout << "STD vector " << i << ", it = " << *it << "\n";
+	ft::vector<int>::iterator ite = m.begin();
+	for (size_t i = 0; ite != m.end(); i++, ite++)
+		std::cout << "FT vector " << i << ", it = " << *it << "\n";
+}
+
+int main()
+{
+	std::vector<int> test;
+	ft::vector<int> mytest;
+
+	for (size_t i = 0; i < 10; i++)
+		test.push_back(i);
+	for (size_t i = 0; i < 10; i++)
+		test.push_back(i);
+	print(test, mytest);
 }

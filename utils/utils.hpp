@@ -2,7 +2,6 @@
 #define UTILS_HPP
 
 #include <iostream>
-
 namespace ft
 {
 	//will check if type will be true then will replace type with int
@@ -63,41 +62,40 @@ namespace ft
 	template <class T1, class T2>
 	class pair
 	{
-	private:
-		T1	first;
-		T2	second;
-	public:
-		pair() : first(), second() {};
+		public:
+			T1	first;
+			T2	second;
+			
+			pair() : first(), second() {};
 
-		template<class U, class V>
-		pair(const pair<U,V> &pr)
-		{
-			first = pr.first;
-			second = pr.second;
-		}
-		pair(const T1 &a, const T2 &b) : first(a), second(b) {};
+			template<class U, class V>
+			pair(const pair<U,V> &pr)
+			{
+				first = pr.first;
+				second = pr.second;
+			}
+			pair(const T1 &a, const T2 &b) : first(a), second(b) {};
 
-		pair(const pair<T1,T2> &pr)
-		{ this = pr; }
+			pair(const pair<T1,T2> &pr)
+			{ this = pr; }
 
-		pair&	operator=(const pair &pr)
-		{
-			if (this == pr)
+			pair&	operator=(const pair &pr)
+			{
+				if (this == pr)
+					return (*this);
+				first = pr.first;
+				second = pr.second;
 				return (*this);
-			first = pr.first;
-			second = pr.second;
-			return (*this);
-		}
-		~pair() {};
+			}
+			~pair() {};
 	};
 
 		//----------------------------------------------------------------------------------//
 		template <class T1, class T2>
-		pair<T1,T2> make_pair(T1 x, T2 y)
+		pair<T1,T2> make_pair(T1 t, T2 u)
 		{
-			return (pair<T1,T2>(x,y));
+			return (pair<T1,T2>(t,u));
 		}
 		//---------------------------------------------------------------------------------//
-
 }
 #endif

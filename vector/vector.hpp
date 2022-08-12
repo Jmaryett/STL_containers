@@ -15,479 +15,697 @@
 
 namespace ft
 {
+	/**
+	* ------------------------------------------------------------- *
+	* ------------------------ FT::VECTOR ------------------------- *
+	*
+	* - Coplien form:
+	* (constructor):		Construct vector
+	* (destructor):		 Destruct vector
+	* operator=:			Assign vector
+	*
+	* - Iterators:
+	* begin:				Return iterator to beginning
+	* end:				  Return iterator to end
+	* rbegin:			   Return reverse iterator to reverse beginning
+	* rend:				 Return reverse iterator to reverse end
+	*
+	* - Capacity:
+	* size:				 Return size
+	* max_size:			 Return maximum size
+	* resize:			   Change size
+	* capacity:			 Return size of allocated storage capacity
+	* empty:				Test whether vector is empty
+	* reserve:			  Request a change in capacity
+	*
+	* - Element access:
+	* operator[]:		   Access element
+	* at:				   Access element
+	* front:				Access first element
+	* back:				 Access last element
+	*
+	* - Modifiers:
+	* assign:			   Assign vector content
+	* push_back:			Add element at the end
+	* pop_back:			 Delete last element
+	* insert:			   Insert elements
+	* erase:				Erase elements
+	* swap:				 Swap content
+	* clear:				Clear content
+	*
+	* - Non-member function overloads:
+	* relational operators: Relational operators for vector
+	* swap:				 Exchange contents of two vectors
+	* ------------------------------------------------------------- *
+	*/
+		
+	/**
+	*   @param T		Type of container's elements.
+	*   @param Alloc	Object used to manage the vector' storage.
+	*/
 	template <typename T, class Alloc = std::allocator<T> >
 	class vector
 	{
 		public:
-		/* -------------------------- ALIASES -------------------------- */
-		typedef T			value_type;
-		typedef Alloc		allocator_type;
-		typedef long int	difference_type;
-		typedef size_t	 	size_type;
 
-		typedef T&			reference;
-		typedef const T&	const_reference;
-		typedef T*			pointer;
-		typedef const T*	const_pointer;
-		
-		typedef typename ft::iterator<T>		iterator;
-		typedef const typename ft::iterator<T>  const_iterator;
+			/* -------------------------- ALIASES -------------------------- */
+			
+			typedef T											value_type;
+			typedef Alloc										allocator_type;
+			typedef long int									difference_type;
+			typedef size_t										size_type;
 
-		typedef typename ft::reverse_iterator<T>		reverse_iterator;
-		typedef const typename ft::reverse_iterator<T>  const_reverse_iterator;
+			typedef T&											reference;
+			typedef const T&									const_reference;
+			typedef T*											pointer;
+			typedef const T*									const_pointer;
+			
+			typedef typename ft::iterator<T, false>				iterator;
+			typedef typename ft::iterator<T, true> 				const_iterator;
 
-		/* ------------------------- ATTRIBUTES ------------------------ */
+			typedef typename ft::reverse_iterator<T, false>		reverse_iterator;
+			typedef typename ft::reverse_iterator<T, true>		const_reverse_iterator;
+
+			/* ------------------------- ATTRIBUTES ------------------------ */
+
 		private:	
 		
-		Alloc		_alloc;	// Copy of allocator_type object
-		pointer		_array;	// Pointer on an array of T values
-		size_type	_size;	// Number of T values inside the vector
-		size_type	_capacity;	// Capacity allocated (can be greater than size)
+			Alloc			   _alloc;		 // Copy of allocator_type object
+			pointer			 _vector;		// Pointer on an array of T values
+			size_type		   _size;		  // Number of T values inside the vector
+			size_type		   _capacity;	  // Capacity allocated (can be greater than size)
 
-		void	destroy_tmp(vector &tmp)
-		{
-			switch (_size)
-			{
-			case 0:
-				break;
-			default:
-				for (iterator it = tmp.begin(); it != tmp.end(); ++it)
-					tmp._alloc.destroy(&(*it));
-				tmp._alloc.deallocate(tmp._array, tmp._capacity);
-				break;
-			}
-		}
+
+			/* ------------------------ COPLIEN FORM ----------------------- */
 
 		public:
-		//default constructor - creates a vector with a size of 0.
-		explicit vector(const allocator_type& alloc = allocator_type()) : _alloc(alloc), _size(0), _capacity(0)
-		{ _array = _alloc.allocate(_capacity); }
-
-		//filling constructor - creates a container with n elems
-		explicit vector(size_type n, const value_type& val = value_type(),
-					const allocator_type& alloc = allocator_type()) : _alloc(alloc), _size(n), _capacity(n)
-		{
-			_array = _alloc.allocate(_capacity);
-			for (size_type i = 0; i < _size; ++i)
-				_alloc.construct(&_array[i], val);
-		}
-
-		//range constructor - creates a container with as many elems, as in the range [first,last]
-		template <class InputIterator>
-		vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(),
-			typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = 0) : _alloc(alloc), _size(0)
-		{
-			InputIterator tmp(first);
-			while (tmp++ != last)
-				_size++;
-			_capacity = _size;
-			_array = _alloc.allocate(_capacity);
-			for (int i = 0; first != last; ++first, ++i)
-				_alloc.construct(&_array[i], *first);
-		}
-
-		//copy constructor - creates a vector with the same size and copy/construct
-		//all x values to the new area allocated.
-		vector(const vector& copy)
-		{ *this = copy; }
-
-		~vector()
-		{
-			for (iterator it = begin(); it != end(); ++it)
-				_alloc.destroy(&(*it));
-			_alloc.deallocate(_array, _capacity);
-		}
-
-		vector& operator= (const vector& object)
-		{
-			if (this == &object)
-				return (*this);
-			iterator	it = object.begin();
-			_alloc = object._alloc;
-			_size = object._size;
-			_capacity = object._capacity;
-			_array = _alloc.allocate(_capacity);
-			for (size_t i = 0; it != object.end(); i++, it++)
-				_alloc.construct(&_array[i], *it);
-			return (*this);
-		}
-
-		/* ------------------------- ITERATORS ------------------------- */
-	
-		//end iterators point to smth after the last element in array
-		//accessing them will cause undefined behaviour (same for rend for reverse_it)
-		iterator	begin()
-		{ return iterator(_array); }
-		iterator	end()
-		{ return iterator(_array + _size); }
-	
-		const_iterator  begin() const
-		{ return const_iterator(_array); }
-		const_iterator  end() const
-		{ return const_iterator(_array + _size); }
-
-		reverse_iterator rbegin()
-		{ return reverse_iterator(_array + _size - 1); }
-		reverse_iterator rend()
-		{ return reverse_iterator(_array - 1); }
-
-		const_reverse_iterator rbegin() const
-		{ return const_reverse_iterator(_array + _size - 1); }
-		const_reverse_iterator rend() const	
-		{ return const_reverse_iterator(_array - 1); }
 		
-		/* -------------------------- CAPACITY ------------------------- */
+			/**
+			*   Default constructor, creates a vector with a size of 0.
+			*
+			*   @param alloc	The template param used for the allocation.
+			*/
+			explicit vector(const allocator_type& alloc = allocator_type()) : _alloc(alloc), _size(0), _capacity(0)
+			{
+				_vector = _alloc.allocate(_capacity);
+			}
 
-		size_type	size() const
-		{ return _size; }
-		size_type	max_size() const
-		{ return (_alloc.max_size()); }
-		size_type	capacity() const
-		{ return _capacity; }
-		allocator_type	get_allocator() const
-		{ return (_alloc); }
+			/**
+			*   Fill constructor, creates a vector with a size of n and initializes the 
+			*   values.
+			*
+			*   @param n		The number of elements that will be created.
+			*   @param val	  The value used for initialization (value initialized by default).
+			*   @param alloc	The template param used for the allocation.
+			*/
+			explicit vector(size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type()) : _alloc(alloc), _size(n), _capacity(n)
+			{
+				_vector = _alloc.allocate(_capacity);
+				
+				for (size_type i = 0; i < _size; ++i)
+					_alloc.construct(&_vector[i], val);
+			}
+							
+			/**
+			*   Range constructor, creates a vector with a size equal to the range between two
+			*   iterators and copy the values of this range to the new elements created.
+			*
+			*   @param first	An iterator representing first element of the range.
+			*   @param last	 An iterator indicating end of the range (will be excluded and not copied).
+			*   @param alloc	The template param used for the allocation.
+			*/
+			template <class InputIterator>
+			vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename ft::enable_if<!ft::is_integral<InputIterator>::value >::type* = 0) :
+					_alloc(alloc), _size(0)
+			{
+				InputIterator tmp(first);
+				while (tmp++ != last)
+					_size++;
+				
+				_capacity = _size;
+				_vector = _alloc.allocate(_capacity);
+
+				for (int i = 0; first != last; ++first, ++i)
+					_alloc.construct(&_vector[i], *first);
+			}
+					
+			/**
+			*   Copy constructor, creates a vector with the same size and copy/construct
+			*   all x values to the new area allocated.
+			*   
+			*   @param x		The vector that will be copied.
+			*/
+			vector(const vector& x) : _alloc(x._alloc), _size(x._size), _capacity(x._capacity)
+			{
+				_vector = _alloc.allocate(_capacity);
+				
+				for (ft::pair<int, const_iterator> i(0, x.begin()); i.second != x.end(); ++i.first, ++i.second)
+					_alloc.construct(&_vector[i.first], *i.second);
+			}
+
+			/**
+			*   Assigns a vector to this vector. Calls the copy constructor to do the
+			*   assignment(copy and swap idiom).
+			*   
+			*   @param x		The vector that will be assigned.
+			*/
+			vector& operator= (const vector& x)
+			{
+				vector tmp(x);
+				swap(tmp);
+				return *this;
+			}
+
+			/**
+			*   Destructor, destroys all the vector's elements and then deallocates vector's
+			*   ressources.
+			*/
+			~vector()
+			{
+				for (iterator it = begin(); it != end(); ++it)
+					_alloc.destroy(&(*it));
+				_alloc.deallocate(_vector, _capacity);
+			}
+
+			/* ------------------------- ITERATORS ------------------------- */
+			
+			//returns an iterator pointing to the first element of the vector.
+			iterator	begin()
+			{ return iterator(_vector); }
+				
+			// returns a const_iterator pointing to the first element of the vector.
+			const_iterator	begin() const
+			{ return const_iterator(_vector); }
+			
+			//returns an iterator pointing after the last element of the vector. Access this iterator will result in undefined behavior.
+			iterator	end()
+			{ return iterator(_vector + _size); }
+
+			//returns a const_iterator pointing after the last element of the vector. Access this iterator will result in undefined behavior.
+			const_iterator	end() const
+			{ return const_iterator(_vector + _size); }
+
+			//returns a reverse_iterator pointing to the last element of the vector.
+			reverse_iterator	rbegin()
+			{ return reverse_iterator(_vector + _size - 1); }
+
+			//returns a const_reverse_iterator pointing to the last element of the vector.
+			const_reverse_iterator	rbegin() const
+			{ return const_reverse_iterator(_vector + _size - 1); }
+			
+			//returns a reverse_iterator pointing before the first element of the vector. Access this iterator will result in undefined behavior.
+			reverse_iterator	rend()
+			{ return reverse_iterator(_vector - 1); }
+			
+			//returns	 A const_reverse_iterator pointing before the first element of the vector. Access this iterator will result in undefined behavior.
+			const_reverse_iterator	rend() const
+			{ return const_reverse_iterator(_vector - 1); }
 		
-		void resize(size_type n, value_type val = value_type())
-		{
-			if (n > _capacity)
+			/* -------------------------- CAPACITY ------------------------- */
+			
+			size_type	size() const
+			{ return _size; }
+
+			size_type	max_size() const
 			{
-				reserve(n);
-				for (; _size < n; _size++)
-					_alloc.construct(&_array[_size], val);
-				_size = n;
+				return (_alloc.max_size());
 			}
-			else if (n > _size && n < _capacity)
+			
+			/**
+			*   Resizes the vector so that it contains n elements. If the capacity isn't 
+			*   enough, a reallocation will happen. 
+			*	
+			*   @param n	The number of elements that the vector will contain after beeing resized.
+			*   @param val  If new elements need to be added, they will be initialize with val
+			*			   (value initialize by default).
+			*/
+			void	resize(size_type n, value_type val = value_type())
 			{
-				for (size_t i = _size; i < n; i++)
-					_alloc.construct(&_array[i], val);
-				_size = n;
-			}
-			else if (n < _size)
+				if (n > _capacity)
+					reallocateVec(n);
+				while (n > _size)
+					push_back(val);
 				while (n < _size)
 					pop_back();
-		}
-
-		bool	empty() const
-		{
-			switch (_size)
-			{
-			case 0:
-				return true;
-				break;
-			default:
-				return false;
-				break;
 			}
-		}
 
-		//	Requests that the vector capacity be at least enough to contain n elements. If the
-		//	actual capacity is greater than n, nothing happen. If the capacity requested 
-		//	is > than max size, a lenght_error exception is thrown.
-		void	reserve(size_type n)
-		{
-			if (n > max_size())
-				throw std::length_error("vector");
-			if (n > _capacity)
+			size_type	capacity() const
+			{ return _capacity; }
+
+			//True if the vector' size is equal to 0.
+			bool	empty() const
 			{
-				try
+				switch (_size)
 				{
-					vector	tmp(*this);
-					switch (_size)
-					{
-					case 0:
-						break;
-					default:	
-						for (size_type i = 0; i < _size; i++)
-							_alloc.destroy(&_array[i]);
-						_alloc.deallocate(_array, _capacity);
-						break;
-					}
-					_array = _alloc.allocate(n);
-					for (size_type i = 0; i < _size; i++)
-						_alloc.construct(&_array[i], tmp[i]);
-					//destroy_tmp(tmp);
-					_capacity = n;
-				}
-				catch(const std::exception& e)
-				{
-					std::cerr << e.what() << '\n';
+				case 0:
+					return true;
+					break;
+				default:
+					return false;
+					break;
 				}
 			}
-		}
 
-		/* ---------------------- ELEMENTS ACCESS ---------------------- */
-		reference operator[] (size_type n)
-		{ return _array[n]; }
-		const_reference operator[] (size_type n) const
-		{ return _array[n]; }
-
-		//returns a reference to the elem at position n, it checks if n is out of bounds
-		//operator[] doesn't check
-		reference at(size_type n)
-		{
-			if (!(n < _size))
-				throw std::out_of_range("vector");
-			return _array[n];
-		}
-		const_reference at(size_type n) const
-		{
-			if (!(n < _size))
-				throw std::out_of_range("vector");
-			return _array[n];
-		}
-
-		//returns a reference to the first elem in the vector
-		reference front()
-		{ return _array[0]; }
-		const_reference front() const
-		{ return _array[0]; }
-		//returns a reference to the last elem in the vector
-		reference back()
-		{ return _array[_size - 1]; }
-		const_reference back() const
-		{ return _array[_size - 1]; }
-
-		/* ------------------------- MODIFIERS ------------------------- */
-		
-		//assigns new contents to the vector, replacing its current content, 
-		//and modifying its size accordingly. The new contents are elements constructed 
-		//from each of the elements in the range between first and last iterators
-
-		template <class InputIterator>
-		void assign (InputIterator first, InputIterator last,
-					typename ft::enable_if<!ft::is_integral<InputIterator>::value >::type* = 0)
-		{
-			clear();
-			size_type n = static_cast<size_type>(last - first);
-			if (n > _capacity)
+			/**
+			*   Requests that the vector capacity be at least enough to contain n elements. If the
+			*   actual capacity is greater than n, nothing happen. If the capacity requested 
+			*   is > than max size, a lenght_error exception is thrown.
+			*	
+			*   @param n	The new capacity to be allocated.
+			*/
+			void	reserve(size_type n)
 			{
-				_alloc.deallocate(_array, _capacity);
-				_array = _alloc.allocate(n);
+				if (n > max_size())
+					throw std::length_error("vector");
+				if (n > _capacity)
+					reallocateVec(n);
 			}
-			size_type i = 0;
-			for (; first != last; ++i, ++first)
-				_alloc.construct(&_array[i], *first);
-			_size = i;
-		}
- 
-		void assign (size_type n, const value_type& val)
-		{
-			clear();
-			if (n > _capacity)
+
+			/* ---------------------- ELEMENTS ACCESS ---------------------- */
+			
+			/**
+			*   Access an element at n index. Undefined behavior if n is outside 
+			*   vector's range.
+			*   Returns a reference to the element at n index.
+			*/
+			reference	operator[](size_type n)
+			{ return _vector[n]; }
+			
+			/**
+			*   Access an element at n index. Undefined behavior if n is outside 
+			*   vector's range.   
+			*   Returns a const reference to the element at n index.
+			*/
+			const_reference	operator[](size_type n) const
+			{ return _vector[n]; }
+			
+			/**
+			*   Access an element at n index. If n is outside vector's range, throw an 
+			*   out_of_range exception.
+			*   Returns a reference to the element at n index.
+			*/
+			reference	at(size_type n)
 			{
-				_alloc.deallocate(_array, _capacity);
-				_array = _alloc.allocate(n);
+				if (!(n < _size))
+					throw std::out_of_range("vector");
+				return _vector[n];
 			}
-			for (size_type i = 0; i < n; ++i)
-				_alloc.construct(&_array[i], val);
-			_size = n;
-		}
 
-		//adds a new element at the end of the vector, after its current last element.
-		//size is increased and a reallocation happen if actual capacity isn't enough.
-		void push_back (const value_type &val)
-		{
-			if (_size + 1 > _capacity)
-				reserve(_size + 1);
-			_alloc.construct(&_array[_size], val);
-			_size += 1;
-		}
-
-		//removes the last element in the vector, reducing the container size by one.
-		//this destroys the removed element. Does nothing if the vector is empty.
-		void pop_back()
-		{
-			if (_size)
+			/**
+			*   Access an element at n index. If n is outside vector's range, throw an 
+			*   out_of_range exception.
+			*   Returns a const reference to the element at n index.
+			*/
+			const_reference	at(size_type n) const
 			{
-				_alloc.destroy(&_array[_size - 1]);
-				_size -= 1;
+				if (!(n < _size))
+					throw std::out_of_range("vector");
+				return _vector[n];
 			}
-		}
+			
+			/**
+			*   Access first vector's element. Undefined behavior if the vector is empty.
+			*   Returns a reference to the first vector's element.
+			*/
+			reference	front()
+			{ return _vector[0]; }
+			
+			/**
+			*   Access first vector's element. Undefined behavior if the vector is empty.
+			*   Returns a const reference to the first vector's element.
+			*/
+			const_reference	front() const
+			{ return _vector[0]; }
+			
+			/**
+			*   Access last vector's element. Undefined behavior if the vector is empty.
+			*   Returns a reference to the last vector's element.
+			*/
+			reference	back()
+			{ return _vector[_size - 1]; }
 
-		//inserts 1 element with a value of val at a position, and increases the vector' size
-		//reallocation will occured only if vector's capacity isn't enough
-		iterator	insert(iterator position, const value_type &val)
-		{
-			//we save position in case of realloc happened, because array will
-			//point to another address then
-			difference_type index = position - begin();
-			insert(position, 1, val);
-			return iterator(&_array[index]);
-		}
+			/**
+			*   Access last vector's element. Undefined behavior if the vector is empty.
+			*   returns a const reference to the last vector's element.
+			*/
+			const_reference	back() const
+			{ return _vector[_size - 1]; }
 
-		//inserts n elements with a value of val at a position, and increases the vector' size
-		void	insert(iterator position, size_type n, const value_type& val)
-		{
-			//we save position in case of realloc happened, because array will
-			//point to another address then
-			difference_type index = position - begin();
-			if (_size + n > _capacity)
-				reserve(_size + n);
-			//if realloc happened we create new iterator pointing to correct address
-			iterator newPosition(&_array[index]);
-			//move at (newPosition + n) all elements after newPosition if nP isn't the last elem
-			if (newPosition != end())
-				move_elems_right(newPosition, n);
-			//insert new elems to this space
-			for (size_type i = 0; i < n; ++i)
-				_alloc.construct(&(*newPosition++), val);
-			_size += n;
-		}
 
-		//inserts all elements between first and last, and increases the vector' size
-		template <class InputIterator>
-		void	insert(iterator position, InputIterator first, InputIterator last, 
-					typename ft::enable_if<!ft::is_integral<InputIterator>::value >::type* = 0)
-		{
-			size_type n = 0;
-			InputIterator tmp(first);
-			while (tmp++ != last)
-				++n;
-			difference_type index = position - begin();
-
-			if (_size + n > _capacity)
-				reserve(_size + n);
-			iterator newPosition(&_array[index]);
-			if (newPosition != end())
-				move_elems_right(newPosition, n);
-			//constructing n new elements from the iterator's range
-			for (size_type i = 0; i < n; ++i)
-				_alloc.construct(&(*newPosition++), *first++);
-			_size += n;
-		}
-
-		//removes from the vector a single element and reduces vector' size by 1
-		//erasing elements other than vector.end() will occured a reallocation
-		iterator erase (iterator position)
-		{ return erase(position, position + 1); }
-
-		//removes from the vector all elements between first and last, and reduces vector' size
-		//erasing elements other than from vector.end() to vector.end() will occured a reallocation
-		iterator erase (iterator first, iterator last)
-		{
-			if (first == end() || first == last)
-				return first;
-			difference_type index = first - begin();
-			//If there are elements after the iterators range, we need to move them at first position
-			if (last < end())
+			/* ------------------------- MODIFIERS ------------------------- */
+			
+			/**
+			*   Assigns new contents to the vector, replacing its current content, 
+			*   and modifying its size accordingly. The new content are elements constructed 
+			*   from each of the elements in the range between first and last iterators.
+			*   @param first	An iterator pointing at the beginning of the range (will be included).
+			*   @param last	 An iterator pointing at the end of the range (will not be included)
+			*/
+			template <class InputIterator>
+			void	assign (InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value >::type* = 0)
 			{
-				move_elems_left(first, last);
-				_size -= static_cast<size_type>(last - first);
+				clear();
+				size_type n = static_cast<size_type>(last - first);
+				// Reallocating only if new capacity exceeds previous
+				if (n > _capacity)
+				{
+					_alloc.deallocate(_vector, _capacity);
+					_vector = _alloc.allocate(n);
+				}
+				size_type i = 0;
+				for (; first != last; ++i, ++first)
+					_alloc.construct(&_vector[i], *first);
+				_size = i;
 			}
-			else
+
+			/**
+			*   Assigns new contents to the vector, replacing its current content, 
+			*   and modifying its size accordingly.
+			*   @param n	Number of new elements constructed.
+			*   @param val  Each new elements will be copy constructed from val.
+			*/  
+			void	assign(size_type n, const value_type& val)
 			{
-				size_type newSize = _size - static_cast<size_type>(last - first);
-				while (_size != newSize)
+				clear();
+				// Reallocating only if new capacity exceeds previous
+				if (n > _capacity)
+				{
+					_alloc.deallocate(_vector, _capacity);
+					_vector = _alloc.allocate(n);
+				}
+				for (size_type i = 0; i < n; ++i)
+					_alloc.construct(&_vector[i], val);
+				_size = n;
+			}
+			
+			/**
+			*   Adds a new element at the end of the vector, after its current last element.
+			*   Size is increased and a reallocation happen if actual capacity isn't enough.
+			*   @param val  The new element will be copy constructed from val.
+			*/
+			void	push_back(const value_type& val)
+			{
+				if (_size + 1 > _capacity)
+					reserve(_size + 1); //reallocateVec(!_capacity ? 1 : _capacity * 2);
+				_alloc.construct(&_vector[_size], val);
+				_size += 1; //not sure if needed
+			}
+
+			/**
+			*   Removes the last element in the vector, reducing the container size by one.
+			*   This destroys the removed element. Does nothing if the vector is empty.
+			*/
+			void	pop_back()
+			{
+				if (_size)
+					_alloc.destroy(&_vector[_size-- - 1]);
+			}
+			
+			/**
+			*   Inserts 1 element with a value of val at a position, and increases the vector' size.
+			*   A reallocation will occured only if vector's capacity isn't enough.
+			*   @param position The element will be inserted just before this position. All elements
+			*	after this position will be moved of a len of 1.
+			*   @param val	  Value of the element inserted.
+			*   returns an iterator on the newly element inserted.
+			*/
+			iterator	insert(iterator position, const value_type& val)
+			{
+				//We save position in case of realloc happened, because array will point to another address then
+				difference_type index = position - begin();
+				insert(position, 1, val);
+				return iterator(&_vector[index]);
+			}
+			
+			/**
+			*   Inserts n elements with a value of val at a position, and increases the vector' size.
+			*   A reallocation will occured only if vector's capacity isn't enough.
+			*   @param position Elements will be inserted just before this position. All elements
+			*	after this position will be moved of a len of n.
+			*   @param n		Number of elements to be inserted.
+			*   @param val	  Value of the elements inserted.
+			*/
+			void	insert(iterator position, size_type n, const value_type& val)
+			{
+				// We save position in case of realloc happened, because array will point to another address then
+				difference_type index = position - begin();
+				if (_size + n > _capacity)
+					reallocateVec(_capacity + n);
+				// Creating a new iterator pointing to the correct allocated are (case a realloc occured previously)
+				iterator newPosition(&_vector[index]);
+				// Moving at newPosition + n all elements after newPosition
+				if (newPosition != end())
+					moveElementsToTheRight(newPosition, n);
+				// Constructing n new elements from val
+				for (size_type i = 0; i < n; ++i)
+					_alloc.construct(&(*newPosition++), val);
+				_size += n;
+			}
+
+			/**
+			*   Inserts all elements between first and last, and increases the vector' size.
+			*   A reallocation will occured only if vector's capacity isn't enough.
+			*   @param position Elements will be inserted just before this position. All elements
+			*	after this position will be moved of the range' size.
+			*   @param first	An iterator pointing to the range's beginning (will be include).
+			*   @param last	 An iterator pointing to the range's end (will not be include).
+			*/  
+			template <class InputIterator>
+			void	insert(iterator position, InputIterator first, InputIterator last, typename ft::enable_if<!ft::is_integral<InputIterator>::value >::type* = 0)
+			{
+				// Counting number of elements to add
+				size_type n = 0;
+				InputIterator tmp(first);
+				while (tmp++ != last)
+					++n;
+				//We save position in case of realloc happened, because array will point to another address then
+				difference_type index = position - begin();
+				if (_size + n > _capacity)
+					reallocateVec(_capacity + n);
+				// Creating a new iterator pointing to the correct allocated are (case a realloc occured previously)
+				iterator newPosition(&_vector[index]);
+				// Moving at newPosition + n all elements after newPosition
+				if (newPosition != end())
+					moveElementsToTheRight(newPosition, n);
+				// Constructing n new elements from the iterator's range
+				for (size_type i = 0; i < n; ++i)
+					_alloc.construct(&(*newPosition++), *first++);
+				_size += n;
+			}
+
+			/**
+			*   Removes from the vector a single element and reduces vector' size by 1.
+			*   Erasing elements other than vector.end() will occured a reallocation.
+			*   @param position The element that will erased. The element's range past this position
+			*	will be moved to this position.
+			*   returns an iterator pointing to the new location of the element that follows the element erased by the function call.
+			*/
+			iterator	erase(iterator position)
+			{
+				return erase(position, position + 1);
+			}
+			
+			/**
+			*   Removes from the vector all elements between first and last, and reduces vector' size.
+			*   Erasing elements other than from vector.end() to vector.end() will occured a reallocation.
+			*   @param first	The beginning of the range to erase (will be include).
+			*   @param last	 The end of the range to erase (will not be include). The element's range
+			*	past this position will be moved to this first position.
+			*   returns an iterator pointing to the new location of the element that follows 
+			*	the elements' range erased by the function call.
+			*/
+			iterator	erase(iterator first, iterator last)
+			{
+				if (first == end() || first == last)
+					return first;
+				// In case of a realloc, iterators will be invalited because _vector
+				// points to another allocated area so we need to save the index array
+				// where first is pointing to create a new iterator after the reallocation
+				difference_type index = first - begin();
+				// If there is elements after the iterators range, we need to move them at first position
+				if (last < end())
+				{
+					moveElementsToTheLeft(first, last);
+					_size -= static_cast<size_type>(last - first);
+				}
+				else
+				{
+					size_type newSize = _size - static_cast<size_type>(last - first);
+					while (_size != newSize)
+						pop_back();
+				}
+				return iterator(&_vector[index]);
+			}
+
+			/**
+			*   Swaps a vector with the content of this one.
+			*   @param x	The vector to be swapped.
+			*/
+			void	swap(vector& x)
+			{
+				swap(_alloc, x._alloc);
+				swap(_vector, x._vector);
+				swap(_size, x._size);
+				swap(_capacity, x._capacity);
+			}
+
+			/**
+			*   Removes all elements from the vector (which are destroyed), leaving the 
+			*   container with a size of 0.
+			*/
+			void	clear()
+			{
+				while (_size)
 					pop_back();
 			}
-			return iterator(&_array[index]);
-		}
 
-		void	clear()
-		{
-			while (_size)
-				pop_back();
-			_size = 0;
-		}
 
-		void	swap(vector &x)
-		{
-			vector	tmp(*this);
-			_alloc = x._alloc;
-			_size = x._size;
-			_capacity = x._capacity;
-			_array = x._array;
+			/* --------------- NON-MEMBER FUNCTION OVERLOADS --------------- */
 
-			x._alloc = tmp._alloc;
-			x._size = tmp._size;
-			x._capacity = tmp._capacity;
-			x._array = tmp._array;
-			destroy_tmp(tmp);
-		}
-
-		/* --------------- NON-MEMBER FUNCTION OVERLOADS --------------- */
-
-		friend bool operator==(const vector &lhs, const vector &rhs)
-		{
-			if (lhs.size() != rhs.size())
-				return false;
-			for (ft::pair<const_iterator, const_iterator> it(lhs.begin(), rhs.begin());
-					it.first != lhs.end(); ++it.first, ++it.second)
-				if (*(it.first) != *(it.second))
+			/**
+			*   returns true if the 2 vectors have same size and same content.
+			*/
+			friend bool	operator==(const vector& lhs, const vector& rhs)
+			{
+				if (lhs.size() != rhs.size())
 					return false;
-			return true;
-		}
+				for (ft::pair<const_iterator, const_iterator> it(lhs.begin(), rhs.begin()); it.first != lhs.end(); ++it.first, ++it.second)
+					if (*(it.first) != *(it.second))
+						return false;
+				return true;
+			}
 
-		friend bool operator!=(const vector& lhs, const vector& rhs)
-		{ return !(lhs == rhs); }
+			/**
+			*   returns true if the 2 vectors have different size or different content.
+			*/
+			friend bool	operator!=(const vector& lhs, const vector& rhs)
+			{ return !(lhs == rhs); }
+			
+			/**
+			*   Compares the elements sequentially using operator< and stopping at the 
+			*   first occurrence.
+			*   Returns true if all lhs' elements are < to rhs' elements, or if
+			*	lhs' content == rhs' content and lhs' size < rhs' size.
+			*/
+			friend bool	operator<(const vector& lhs, const vector& rhs)
+			{
+				for (ft::pair<const_iterator, const_iterator> it(lhs.begin(), rhs.begin()); it.first != lhs.end() && it.second != rhs.end(); ++it.first, ++it.second)
+					if (*(it.first) < *(it.second))
+						return true;
+				return (lhs.size() < rhs.size());
+			}
 
-		friend bool operator<(const vector& lhs, const vector& rhs)
-		{
-			for (ft::pair<const_iterator, const_iterator> it(lhs.begin(), rhs.begin());
-					it.first != lhs.end() && it.second != rhs.end(); ++it.first, ++it.second)
-				if (*(it.first) < *(it.second))
-					return true;
-			return (lhs.size() < rhs.size());
-		}
+			/**
+			*   Uses operator< to compare the 2 vectors (rhs < lhs).
+			*
+			*   returns true if all lhs' elements are > to all rhs' elements, or if
+			*			   lhs' content == rhs' content and lhs' size > rhs' size.
+			*/
+			friend bool	operator>(const vector& lhs, const vector& rhs)
+			{ return rhs < lhs; }
 
-		friend bool operator>(const vector& lhs, const vector& rhs)
-		{ return rhs < lhs; }
+			/**
+			*   Uses operator< to compare the 2 vectors !(rhs < lhs).
+			*
+			*   returns true if all lhs' elements are <= to all rhs' elements, or if
+			*			   lhs' content == rhs' content and lhs' size <= rhs' size.
+			*/
+			friend bool	operator<=(const vector& lhs, const vector& rhs)
+			{ return !(rhs < lhs); }
+			
+			/**
+			*   Uses operator< to compare the 2 vectors !(lhs < rhs).
+			*
+			*   returns true if all lhs' elements are >= to all rhs' elements, or if
+			*			   lhs' content == rhs' content and lhs' size >= rhs' size.
+			*/
+			friend bool operator>=(const vector& lhs, const vector& rhs)
+			{ return !(lhs < rhs); }
 
-		friend bool operator<=(const vector& lhs, const vector& rhs)
-		{ return !(rhs < lhs); }
-	
-		friend bool operator>=(const vector& lhs, const vector& rhs)
-		{ return !(lhs < rhs); }
+			/**
+			*   Swaps the content of two vectors.
+			*
+			*   @param x	Will be swap with y.
+			*   @param y	Will be swap with x.
+			*/
+			friend void	swap(vector& x, vector& y)
+			{ x.swap(y); }
+			
+			/* ------------------ PRIVATE MEMBER FUNCTIONS ----------------- */
 
-		friend void swap (vector &x, vector &y)
-		{ x.swap(y); }
-
-		/* ------------------ PRIVATE MEMBER FUNCTIONS ----------------- */
 		private:
 
-		//Move to the right all elements from a certain position until the end 
-		//of the array. Each element will be constructed/copied to his new position,
-		//and destructed at his previous position.
-		void move_elems_right(iterator pos, size_type lenMove)
-		{
-			// Starting from the end, until it meets pos iterator
-			for (ft::pair<iterator, iterator> it(end() - 1, end());
-				it.second != pos; --it.first, --it.second)
+			/**
+			*   Reallocates vector with a new capacity, and copy/construct the previous
+			*   one using the allocator. Then call destruct the previous one with the destructor.
+			*   @param newCapacity	  The new that will be allocated by the allocator.
+			*/
+			void	reallocateVec(size_type newCapacity)
 			{
-				_alloc.construct(&(*(it.first + lenMove)), *it.first);
-				_alloc.destroy(&(*it.first));
+				pointer tmp = _alloc.allocate(newCapacity);
+				for (size_type i = 0; i < _size; ++i)
+					_alloc.construct(&tmp[i], _vector[i]);
+				this->~vector();
+				_capacity = newCapacity;
+				_vector = tmp;
 			}
-		}
 
-		//Move to the left all elements from a certain position until the end 
-		//of the array. Each element will be constructed/copied to his new position,
-		//and destructed at his previous position.
-		// first Iterator pointing to the new range's beginning, elements will be
-		// moved to this position.
-		// last Iterator pointing to the first element to move. Every element after
-		//this one until the end will be moved.
-		void move_elems_left(iterator first, iterator last)
-		{
-			// destructing the previous element to replace it by a new one,
-			// first will destroy all the element until the end.
-			// then moving a new element to the left at first position, only if there is
-			// still element to move
-			for (; first != end(); ++first, ++last)
+			/**
+			*   Swaps two variables.
+			*   @param a		Will be swap with b.
+			*   @param b		Will be swap with a.
+			*/
+			template <typename U>
+			void	swap(U& a, U&b)
 			{
-				_alloc.destroy(&(*first));
-				if (last < end())
-					_alloc.construct(&(*(first)), *last);
+				U tmp = a;
+				a = b;
+				b = tmp;
 			}
-		}
-	};
 
-	template <typename T>
-	std::ostream& operator<<(std::ostream &out, const vector<T> &obj)
-	{
-		std::cout << "vector size = " << obj.size() << " capacity = " << obj.capacity() << "\n";
-		std::cout << "first element is = " << obj.front() << ", last element is = " << obj.back() << "\n";
-		return (out);
-	}
-}
+			/**
+			*   Move to the right all elements from a certain position until the end
+			*   of the array. Each element will be constructed/copied to it's new position,
+			*   then destructed at it's previous position.
+			*   @param pos	  Indicates first element to move. All elements at it's right will be moved too.
+			*   @param lenMov   The len of the movement for each element.
+			*/
+			void	moveElementsToTheRight(iterator pos, size_type lenMov)
+			{
+				// Starting from the end, until it meets pos iterator
+				for (ft::pair<iterator, iterator> it(end() - 1, end());
+					it.second != pos; --it.first, --it.second)
+				{
+					_alloc.construct(&(*(it.first + lenMov)), *it.first);
+					_alloc.destroy(&(*it.first));
+				}
+			}
+
+			/**
+			*   Move to the left all elements from a certain position until the end 
+			*   of the array. Each element will be constructed/copied to it's new position,
+			*   and destructed at it's previous position.
+			*   @param first	Iterator pointing to the new range's beginning, elements will be
+			*				   moved to this position.
+			*   @param last	 Iterator pointing to the first element to move. Every element after
+			*				this one until the end will be moved.
+			*/
+			void moveElementsToTheLeft(iterator first, iterator last)
+			{
+				for (; first != end(); ++first, ++last)
+				{
+					// Destructing the previous element to replace it by a new one.
+					// First will destroy all the element until the end.
+					_alloc.destroy(&(*first));
+					// Moving a new element to the left at first position, only if there is
+					// still element to move
+					if (last < end())
+						_alloc.construct(&(*(first)), *last);
+				}
+			}
+			
+	}; // class vector
+
+} // namespace ft
 
 #endif
